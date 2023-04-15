@@ -41,19 +41,27 @@ UploadButton.addEventListener('click', () => uploader.upload())
 
 每个上传分片**至少**包含以下信息：
 
+totalChunks: number //总块数
+chunkSize: number //预设分块标准大小
+filename: string //文件名
+totalSize: number //总文件大小
+hash: string //文件 md5
+webkitRelativePath: string //上传文件夹时文件路径
+
 - `chunkIndex`: 当前块号
 - `totalChunks`: 总块数
 - `chunkSize`: 预设分块标准大小
 - `currentSize`: 当前块大小
 - `totalSize`: 总文件大小
 - `filename`: 文件名
+- `hash`: 文件 MD5 值
 - `webkitRelativePath`: 上传文件夹时文件路径
 
 得到状态码后的操作：
 
 - 认为请求成功需要上传的状态码: 200, 201, 202
 
-- 认为请求成功不需要上传的状态码: 204，205，206
+- 认为请求成功不需要上传的状态码: 204, 205, 206
 
 - 认为请求失败不再进行上传的状态码: 404, 415, 500, 501
 
@@ -85,6 +93,9 @@ export type Options = Readonly<{
   concurrency: number //最大并发数量，默认为3
   headers: Record<string, string> //附带请求头，默认为{}
   progressCallbacksInterval: number //进度条回调最小间隔，默认为200
+  successCodes: number[] //认为上传和合并文件成功的http状态码，默认为[200,201,202]
+  skipCodes: number[] //认为get测试请求需要跳过上传的http状态码，默认为[204,205,206]
+  errorCodes: number[] //认为上传和合并文件失败的http状态码，默认为[404,415,500,501]
   precheck?: (file: UploadFile) => Promise<boolean> //自定义预检方法，默认为undefined
 }>
 ```
@@ -95,8 +106,8 @@ export type Options = Readonly<{
 export class Uploader {
   //属性
   readonly options: Options //配置
-  fileList: UploadFile[] //待上传的文件(是File[]不是FileList类型)
-  uploadList: UploadFile[] //正在上传的文件队列
+  readonly fileList: UploadFile[] //待上传的所有文件(是UploadFile[]不是FileList类型)
+  readonly uploadList: UploadFile[] //正在上传的文件队列
 
   //监听事件
   onDragEnter?: (event: DragEvent) => void //拖拽文件进入时调用
@@ -105,8 +116,8 @@ export class Uploader {
   onFileAdded?: (file: File) => boolean | Promise<boolean> | void //每一个文件加入待传队列前调用
   onFileReady?: (file: UploadFile) => void //每一个文件添加完毕后调用
   onFileRemoved?: (file: UploadFile) => void //一个文件被移除时调用
-  onFileFailed?: (file: UploadFile, error: Error) => void //一个文件错误时调用
   onFilePaused?: (file: UploadFile) => void //一个文件暂停时调用
+  onFileFailed?: (file: UploadFile, error: Error) => void //一个文件错误时调用
   onFileCompleted?: (file: UploadFile) => void //一个文件的所有分块全部上传成功时调用
   onFileSuccess?: (file: UploadFile) => void //一个文件上传成功时调用(已完成合并请求)
   onFileProgress?: (file: UploadFile) => void //一个文件正在上传时反复调用
@@ -117,7 +128,7 @@ export class Uploader {
   registerDrop(element: HTMLElement): void //将传入元素注册为拖拽上传的uploader
   unRegisterDrop(element: HTMLElement): void //解除传入元素为拖拽上传的uploader
   async addFile(file: File): Promise<void> //添加单个文件
-  async addFileList(fileList: FileList): Promise<void> //添加文件列表
+  async addFileList(fileList: File[]): Promise<void> //添加文件列表
   removeFile(file: UploadFile): void //移除传入文件
   upload: (): void //开始上传待传队列的所有文件
   pause(): void  //暂停全部上传
@@ -135,9 +146,8 @@ export class UploadFile {
   readonly uploader: Uploader //对应的uploader实例
   readonly file: File //原生文件对象
   readonly hash: string //md5值
-  readonly chunks: Chunk[] //所有的文件块
   query: Record<string, string | number> //用户自定义chunk上传参数(仅限字符串，因为是FormData)
-  mergeAppend: Record<string | number | symbol, any> //merge合并请求中追加参数
+  mergeAppend: Record<string, any> //merge合并请求中追加参数
 
   //方法
   async upload(): Promise<void> //上传该文件
@@ -145,13 +155,13 @@ export class UploadFile {
   cancel(): void //取消上传该文件
   resume(): void //恢复上传该文件
 
-  getProgress(): number //获得文件上传进度(0-1)
+  get progress(): number //获得文件上传进度(0-1)
 
-  getCurrentSpeed(): number //获得上传瞬时速度(byte)
+  get currentSpeed(): number //获得上传瞬时速度(byte)
 
-  getAverageSpeed(): number //获得上传平均速度(byte)
+  get averageSpeed(): number //获得上传平均速度(byte)
 
-  getStatus(): FileStatus // 获得该文件状态
+  get status(): FileStatus // 获得该文件状态
 }
 
 type FileStatus = 'waiting' | 'uploading' | 'paused' | 'completed' | 'success' | 'failed'
