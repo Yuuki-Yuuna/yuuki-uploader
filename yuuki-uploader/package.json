@@ -1,0 +1,27 @@
+{
+  "name": "yuuki-uploader",
+  "version": "1.1.0",
+  "description": "支持TypeScript的大文件分片上传器",
+  "type": "module",
+  "main": "./dist/yuuki-uploader.js",
+  "types": "./dist/yuuki-uploader.d.ts",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "uploader",
+    "文件上传"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Yuuki-Yuuna/yuuki-uploader.git"
+  },
+  "author": "yuuki-yuuna",
+  "license": "MIT",
+  "dependencies": {
+    "spark-md5": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/spark-md5": "^3.0.2"
+  }
+}

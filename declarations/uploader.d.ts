@@ -1,0 +1,48 @@
+import { UploadFile } from './file';
+import { RequestList } from './request';
+export type Options = Readonly<{
+    target: string;
+    mergeTarget: string;
+    accept: string;
+    multiple: boolean;
+    directoryMode: boolean;
+    replaceMode: boolean;
+    chunkSize: number;
+    concurrency: number;
+    headers: Record<string, string>;
+    progressCallbacksInterval: number;
+    successCodes: number[];
+    skipCodes: number[];
+    errorCodes: number[];
+    precheck?: (file: UploadFile) => Promise<boolean>;
+}>;
+declare class Uploader {
+    readonly options: Options;
+    readonly fileList: UploadFile[];
+    readonly uploadList: UploadFile[];
+    readonly requestList: RequestList;
+    private readonly _trigger;
+    onDragEnter?: (event: DragEvent) => void;
+    onDragOver?: (event: DragEvent) => void;
+    onDragLeave?: (event: DragEvent) => void;
+    onFileAdded?: (file: File) => boolean | Promise<boolean> | void;
+    onFileReady?: (file: UploadFile) => void;
+    onFileRemoved?: (file: UploadFile) => void;
+    onFilePaused?: (file: UploadFile) => void;
+    onFileFailed?: (file: UploadFile, error: Error) => void;
+    onFileCompleted?: (file: UploadFile) => void;
+    onFileSuccess?: (file: UploadFile) => void;
+    onFileProgress?: (file: UploadFile) => void;
+    constructor(options?: Options);
+    register(element: HTMLElement): void;
+    unRegister(element: HTMLElement): void;
+    registerDrop(element: HTMLElement): void;
+    unRegisterDrop(element: HTMLElement): void;
+    addFile(file: File): Promise<void>;
+    addFileList(fileList: File[]): Promise<void>;
+    removeFile(uploadFile: UploadFile): void;
+    upload(): void;
+    pause(): void;
+    cancel(): void;
+}
+export default Uploader;

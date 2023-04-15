@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ES2018",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "lib": ["ESNext", "DOM"],
+    "skipLibCheck": true,
+    "isolatedModules": true
+    // "paths": {
+    //   "yuuki-uploader": ["yuuki-uploader/src"]
+    // }
+  },
+  "include": ["yuuki-uploader", "play"],
+  "exclude": ["node_modules", "*/dist"]
+}
